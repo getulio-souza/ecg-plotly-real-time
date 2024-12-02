@@ -41,7 +41,7 @@ export class EcgGraphComponent implements OnInit {
           this.resetBPM();
           this.timeElapsed = 0
         }
-      },10000 / this.sampleRate)
+      },9000 / this.sampleRate)
     }).catch((error)=> {
       console.log('error loading Plotly ECG', error)
     })
@@ -68,19 +68,21 @@ export class EcgGraphComponent implements OnInit {
     }
   }
 
+  //method to generate the heath beat from time to time
   generateHeathBeat(time: number): number{
-    const heartBeatCycleDuration = 100 / this.bpm;
+    // const heartBeatCycleDuration = 100 / this.bpm;
+    const heartBeatCycleDuration = 10;
     const relativeTime = time % heartBeatCycleDuration;
 
-    if(relativeTime > 1 && relativeTime < 4){
-      return 1 + Math.random() * 4;
+    if(relativeTime < 7){
+      return 1.0 + Math.random() * 0.1;
     }
 
-    if(relativeTime > 5 && relativeTime < 10){
-      return 2 * Math.exp(-(relativeTime - 4) * 10);
+    if(relativeTime >= 7 && relativeTime < 9){
+      return 3.0 * Math.random() * 0.5;
     }
 
-    return 1 + Math.random() * 3;
+    return 1.0 + Math.random() * 0.1;
   }
 
 //atualiando o graficoECG de tempos em tempos
