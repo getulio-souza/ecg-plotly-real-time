@@ -12,11 +12,13 @@ export class EcgGraphComponent implements OnInit {
   private time: number[] = [];
   private ecgSignal: number[] = [];
   private heartRateInterval: any;
-  private sampleRate =1000;
-  private bpm: number = 70;
+  private sampleRate =40;
+  private bpm: number = 60;
   private duration: number = 10;
-  private maxLength: number = 1000;
+  private maxLength: number = 2500;
   private plotlyInstance: any;
+  private currentTime: number = 0;
+  private timeElapsed: number =0;
 
   ngOnInit(): void {
     if(typeof window !== 'undefined'){
@@ -29,24 +31,35 @@ export class EcgGraphComponent implements OnInit {
     import('plotly.js-dist').then(Plotly => {
       this.plotlyInstance = Plotly;
 
+      //tempo por batimento cardiaco
+      // const timePerBeat = 1000 * 60 / this.bpm;
+
       this.heartRateInterval = setInterval(()=> {
         this.updateECGData();
         this.updateGraph();
+        this.currentTime +=1;
+        this.timeElapsed +=1;
+
+        if(this.timeElapsed >= 10){
+          this.resetBPM();
+          this.timeElapsed = 0
+        }
       },1000 / this.sampleRate)
-    }).catch(error => {
-      console.log('error loading Plotly ECG')
+    }).catch((error)=> {
+      console.log('error loading Plotly ECG', error)
     })
   }
 
+  resetBPM(){
+    this.bpm = Math.floor(Math.random() * (100 - 60 +1)) + 60;
+    console.log('BPM reset to:' , this.bpm)
+  }
+
   updateECGData(){
-    const timePoint = this.time.length > 0 ? this.time[this.time.length -1] + 1 /this.sampleRate : 0;
-    console.log('timepoint:', timePoint)
+    // const timePoint = this.time.length > 0 ? this.time[this.time.length -1] + 1 /this.sampleRate : 0;
+    const timePoint = this.currentTime;
+    const heartBeat = this.generateHeathBeat(timePoint)
     this.time.push(timePoint)
-
-
-    //simulando um sinal ecg 
-    const heartBeat = Math.sin(2 * Math.PI * 1 * timePoint) + Math.random() * 0.05;
-    console.log('heartBeat:', heartBeat)
     this.ecgSignal.push(heartBeat)
 
     //mantendo o comprimento do sinal ECG no limite da largura da tela
@@ -54,6 +67,21 @@ export class EcgGraphComponent implements OnInit {
       this.time.shift();
       this.ecgSignal.shift()
     }
+  }
+
+  generateHeathBeat(time: number): number{
+    const heartBeatCycleDuration = 100 / this.bpm;
+    const relativeTime = time % heartBeatCycleDuration;
+
+    if(relativeTime > 10 && relativeTime < 10){
+      return 1 + Math.random() * 4;
+    }
+
+    if(relativeTime > 10 && relativeTime - 10){
+      return 2 * Math.exp(-(relativeTime - 4) * 10);
+    }
+
+    return 1 + Math.random() * 3;
   }
 
 //atualiando o graficoECG de tempos em tempos
@@ -65,7 +93,7 @@ export class EcgGraphComponent implements OnInit {
       mode: 'lines',
       name: 'Heart Rate Signal',
       line: {
-        color: 'rgb(255, 0, 0)',
+        color: 'green',
         width: 2,
         shape: 'spline',
         smoothing:2.0
@@ -78,7 +106,7 @@ export class EcgGraphComponent implements OnInit {
       xaxis: {
         title: 'Time (s)',
         showgrid: true,
-        zeroline: false
+        zeroline: true
       },
 
       yaxis: {
