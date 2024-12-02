@@ -31,9 +31,6 @@ export class EcgGraphComponent implements OnInit {
     import('plotly.js-dist').then(Plotly => {
       this.plotlyInstance = Plotly;
 
-      //tempo por batimento cardiaco
-      // const timePerBeat = 1000 * 60 / this.bpm;
-
       this.heartRateInterval = setInterval(()=> {
         this.updateECGData();
         this.updateGraph();
@@ -44,28 +41,30 @@ export class EcgGraphComponent implements OnInit {
           this.resetBPM();
           this.timeElapsed = 0
         }
-      },1000 / this.sampleRate)
+      },10000 / this.sampleRate)
     }).catch((error)=> {
       console.log('error loading Plotly ECG', error)
     })
   }
 
   resetBPM(){
-    this.bpm = Math.floor(Math.random() * (100 - 60 +1)) + 60;
+    this.bpm = Math.floor(Math.random() * (80 - 60 + 1)) + 30;
     console.log('BPM reset to:' , this.bpm)
   }
 
   updateECGData(){
     // const timePoint = this.time.length > 0 ? this.time[this.time.length -1] + 1 /this.sampleRate : 0;
     const timePoint = this.currentTime;
-    const heartBeat = this.generateHeathBeat(timePoint)
+    console.log('timePoint:', timePoint)
+    const heartBeat = this.generateHeathBeat(timePoint);
+    console.log('heartBeat', heartBeat)
     this.time.push(timePoint)
     this.ecgSignal.push(heartBeat)
 
     //mantendo o comprimento do sinal ECG no limite da largura da tela
     if(this.time.length > this.maxLength){
       this.time.shift();
-      this.ecgSignal.shift()
+      this.ecgSignal.shift();
     }
   }
 
@@ -73,11 +72,11 @@ export class EcgGraphComponent implements OnInit {
     const heartBeatCycleDuration = 100 / this.bpm;
     const relativeTime = time % heartBeatCycleDuration;
 
-    if(relativeTime > 10 && relativeTime < 10){
+    if(relativeTime > 1 && relativeTime < 4){
       return 1 + Math.random() * 4;
     }
 
-    if(relativeTime > 10 && relativeTime - 10){
+    if(relativeTime > 5 && relativeTime < 10){
       return 2 * Math.exp(-(relativeTime - 4) * 10);
     }
 
