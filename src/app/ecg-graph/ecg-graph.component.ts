@@ -74,9 +74,10 @@ export class EcgGraphComponent implements OnInit {
         this.currentTime += 0.1;  // Atualiza o tempo em incrementos de 100ms
         this.timeElapsed += 0.1;
 
-        if (this.timeElapsed >= 10) {
+        if (this.timeElapsed >= this.duration) {
           this.resetBPM();
           this.timeElapsed = 0;
+          this.resetGraphData();
         }
 
       }, 100); // Atualiza o gráfico 10 vezes por segundo
@@ -88,6 +89,13 @@ export class EcgGraphComponent implements OnInit {
   resetBPM() {
     this.bpm = Math.floor(Math.random() * (100 - 60 + 1)) + 60;
     console.log('BPM resetado para:', this.bpm);
+  }
+
+
+  //limpa os dados do grafico, incluindo tanto o tempo quanto o sinal ECG
+  resetGraphData(){
+    this.time = [];
+    this.ecgSignal = [];
   }
 
   updateECGData() {
@@ -157,6 +165,20 @@ export class EcgGraphComponent implements OnInit {
       showlegend: false,
       plot_bgcolor: 'white',
     };
+
+    const updateData = {
+      x: [this.time],
+      y: [this.ecgSignal]
+    }
+
+    this.plotlyInstance.animate('ecg-plot', {
+      data: [trace],
+      layout: layout,
+      transition: {
+        duration: 500,
+        easing: 'cubic-in-out'
+      }
+    })
 
     if (this.time.length <= this.maxLength) {
       this.plotlyInstance.newPlot('ecg-plot', [trace], layout);
